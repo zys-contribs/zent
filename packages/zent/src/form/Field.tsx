@@ -6,6 +6,7 @@ import assign from 'lodash-es/assign';
 import has from 'lodash-es/has';
 
 import { getValue, getCurrentValue, prefixName } from './utils';
+import canPassRef from '../utils/canPassRef';
 import unknownProps from './unknownProps';
 import FormContext from './FormContext';
 import { IValidation } from './validationRules';
@@ -367,9 +368,11 @@ class Field extends Component<IFieldProps, IFieldState> {
     const { component, ...rest } = this.props;
     const passableProps = this.processProps({
       ...rest,
-      ref: ref => {
-        this.wrappedComponent = ref;
-      },
+      ref: canPassRef(component)
+        ? ref => {
+            this.wrappedComponent = ref;
+          }
+        : undefined,
       name: this.getName(),
       isTouched: this.isDirty(),
       isDirty: this.isDirty(),
