@@ -50,7 +50,8 @@ async function gather() {
     // retrieve front matter from each readme
     const groups = readmeContents.reduce((acc, file) => {
       const {
-        attributes: { group, ...meta },
+        // scatter is only used in markdown file compilation
+        attributes: { group, scatter, ...meta },
       } = fm(file.content);
       let matchedGroup = acc.find(grp => grp.groupName === group);
       if (!matchedGroup) {
@@ -78,7 +79,7 @@ async function gather() {
     LIST_STATICS[locale][1].groups = groups;
   }
 
-  await fs.promises.writeFile(path.join(DST, 'nav.js'), generateConfig(), {
+  await fs.promises.writeFile(path.join(DST, 'nav.ts'), generateConfig(), {
     encoding: 'utf-8',
   });
 }
@@ -93,7 +94,13 @@ function generateConfig() {
     // trim quotes to convert string to code
     .replace(/"source": "(DocLoadable\({.+}\))"/g, `"source": $1`);
 
-  return `import DocLoadable from './components/Loadable';\n\nexport default ${src};`;
+  return `/* eslint-disable */
+import DocLoadable from './components/Loadable';
+import { INavLocaleData } from './types';
+
+const nav: INavLocaleData = ${src};
+export default nav;
+`;
 }
 
 function compareString(a, b) {
